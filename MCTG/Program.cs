@@ -1,2 +1,12 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+﻿
+
+using MCTG.Classes;
+
+/*
+static void Main(string[] args)
+{
+    User user = new("Max");
+}
+
+*/
+

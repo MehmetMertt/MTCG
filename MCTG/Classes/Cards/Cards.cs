@@ -16,12 +16,10 @@ namespace MCTG.Classes.Cards
 
     internal abstract class Cards
     {
-
-
         public string Name { get; private set; }
         public int Damage { get; private set; }
 
-        public ElementTypes ElementTyp { get; set; }
+        public ElementTypes ElementTyp { get; private  set; }
 
         public abstract void Attack();
 

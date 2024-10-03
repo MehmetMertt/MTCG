@@ -10,8 +10,8 @@ namespace MCTG.Classes
     internal class User
     {
         public string Name { get; private set; }
-        private string Username { get; set; }
-        private string Password { get; set; }
+
+        public Authentication Authentication { get; set; }
 
         /* ändern! */
         public List<MCTG.Classes.Cards.Cards> Deck { get; private set; } = new List<MCTG.Classes.Cards.Cards>();
@@ -28,9 +28,7 @@ namespace MCTG.Classes
 
         public User(string name,string password, string username)
         {
-            this.Name = name;
-            this.Password = password;
-            this.Username = username;
+            this.Authentication = new Authentication(username, password);
         }
 
         public void MangeCards()

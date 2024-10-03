@@ -19,7 +19,7 @@ namespace MCTG.Classes.Cards
 
     internal class MonsterCards : Cards
     {
-        public MonsterTypes MonsterType { get; set; }
+        public MonsterTypes MonsterType { get; private set; }
 
         public override void Attack() {
 

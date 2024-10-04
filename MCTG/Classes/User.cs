@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MCTG.Classes.Cards;
 
 namespace MCTG.Classes
 {
@@ -14,8 +13,6 @@ namespace MCTG.Classes
         public Authentication Authentication { get; set; }
 
         /* ändern! */
-        public List<MCTG.Classes.Cards.Cards> Deck { get; private set; } = new List<MCTG.Classes.Cards.Cards>();
-        public List<MCTG.Classes.Cards.Cards> Stack { get; private set; } = new List<MCTG.Classes.Cards.Cards>();
 
         public int Coins { get; private set; } = 20;
         public int MoneySpent { get; private set; } = 0;

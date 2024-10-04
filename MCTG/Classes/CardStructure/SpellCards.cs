@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MCTG.Classes.Cards
+﻿namespace MCTG.Classes.CardStructure
 {
-    internal class SpellCards : Cards
+    internal class SpellCards : Card
     {
         public SpellCards(string name, int damage,ElementTypes elementTypes) : base(name, damage,elementTypes)
         {

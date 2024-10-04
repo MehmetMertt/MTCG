@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MCTG.Classes.Cards
+﻿namespace MCTG.Classes.CardStructure
 {
     enum MonsterTypes
     {
@@ -17,7 +11,7 @@ namespace MCTG.Classes.Cards
         Kraken,
     }
 
-    internal class MonsterCards : Cards
+    internal class MonsterCards : Card
     {
         public MonsterTypes MonsterType { get; private set; }
 

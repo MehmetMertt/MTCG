@@ -8,7 +8,6 @@ namespace MCTG.Classes
 {
     internal class User
     {
-        public string Name { get; private set; }
 
         public Authentication Authentication { get; set; }
 
@@ -23,9 +22,14 @@ namespace MCTG.Classes
         public int Draws { get; private set; } = 0;
         public int ELO { get; private set; } = 100;
 
-        public User(string name,string password, string username)
+        public Stack Stack { get; set; }
+        public Deck Deck { get; set; }
+
+        public User(string username, string password)
         {
             this.Authentication = new Authentication(username, password);
+            this.Stack = new Stack();
+            this.Deck = new Deck();
         }
 
         public void MangeCards()
@@ -40,8 +44,20 @@ namespace MCTG.Classes
         {
         }
 
-        public void BuyCards()
+        public void BuyPackage()
         {
+            if (this.Coins < 5)
+            {
+                Console.WriteLine("You need atleast 5 Coins for buying a package");
+                return;
+            }
+            Package p = new Package();
+            foreach (var card in p.Container)
+            {
+                this.Stack.AddCard(card);
+            }
+            this.Coins =- 5;
+            Console.WriteLine("You successfully bought a package");
         }
 
 

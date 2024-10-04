@@ -9,7 +9,7 @@ using MCTG.Interfaces;
 
 namespace MCTG.Classes
 {
-    internal class Deck : ICardContainer
+    internal class Deck : ICardContainer, IChangeableContainer
     {
         public List<Card> Container { get; set; }
 

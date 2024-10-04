@@ -17,12 +17,14 @@
 
         public abstract void Attack();
 
+        public abstract void PrintInfo();
+
+
         public Card(string name, int damage, ElementTypes elementTyp)
         {
             Name = name;
             ElementTyp = elementTyp;
             Damage = damage;
         }
-
     }
 }

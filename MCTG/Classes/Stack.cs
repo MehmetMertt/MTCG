@@ -10,7 +10,7 @@ using MCTG.Classes.CardStructure;
 namespace MCTG.Classes
 {
 
-    internal class Stack : ICardContainer
+    internal class Stack : ICardContainer, IChangeableContainer
     {
         public List<Card> Container { get; set; }
 

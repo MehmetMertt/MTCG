@@ -11,6 +11,11 @@
 
         }
 
+        public override void PrintInfo()
+        {
+            Console.WriteLine($"Damage: {this.Damage} | Name: {this.Name} | ElementType: {this.ElementTyp} ");
+        }
+
         public int calculateEffectiveness()
         {
             /*

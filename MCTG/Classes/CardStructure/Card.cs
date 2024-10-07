@@ -1,14 +1,13 @@
 ﻿namespace MCTG.Classes.CardStructure
 {
-
-    enum ElementTypes
+    public enum ElementTypes
     {
         Water,
         Fire,
         Normal
     }
 
-    internal abstract class Card
+    public abstract class Card
     {
         public string Name { get; private set; }
         public int Damage { get; private set; }

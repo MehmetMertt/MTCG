@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MCTG.Classes
 {
-    internal class User
+    public class User
     {
 
         public Authentication Authentication { get; set; }
@@ -56,7 +56,8 @@ namespace MCTG.Classes
             {
                 this.Stack.AddCard(card);
             }
-            this.Coins =- 5;
+
+            this.Coins = this.Coins - 5;
             Console.WriteLine("You successfully bought a package");
         }
 

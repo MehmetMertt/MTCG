@@ -8,9 +8,9 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MCTG.Classes
 {
-    internal class Authentication
+    public class Authentication
     {
-        string Username { get; set; }
+        public string Username { get; set; }
         private string Password { get; set; }
         public Authentication(string username, string password)
         {

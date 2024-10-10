@@ -60,16 +60,16 @@ public class Server
 
     private void SendHttpResponse(NetworkStream stream, HttpResponse httpResponse)
     {
-        string statusCode = httpResponse.getStatusCode().ToString();
+        string statusCode = httpResponse.GetStatusCode().ToString();
         string statusMessage = "test"; //TODO: Ändern!
 
 
         string responseHeader = $"HTTP/1.1 {statusCode} {statusMessage}\r\n";
 
         // Füge alle angegebenen Header hinzu
-        if (httpResponse.GetHeader() != null)
+        if (httpResponse.GetHeaders() != null)
         {
-            foreach (var header in httpResponse.GetHeader())
+            foreach (var header in httpResponse.GetHeaders())
             {
                 responseHeader += $"{header.Key}: {header.Value}\r\n";
             }

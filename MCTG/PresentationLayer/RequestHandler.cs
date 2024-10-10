@@ -1,15 +1,10 @@
-﻿using MCTG.Classes.CardStructure;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using Newtonsoft.Json;
-using System.Threading.Tasks;
-using System.Web;
+﻿using System.Text;
 using MCTG.BusinessLayer;
 using MCTG.Classes;
 using MCTG.DAL;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Web;
 
 namespace MCTG.PresentationLayer
 {
@@ -28,19 +23,27 @@ namespace MCTG.PresentationLayer
 
             if (httpMethod == "GET")
             {
-                if (request == "/user")
+                if (request == "/users") //get All Users
                 {
                     return GetUsers();
                 }
                 //toGetHandler
-            } else if (httpMethod == "POST")
+            }
+            else if (httpMethod == "POST")
             {
 
-                if (request == "/users")
+                if (request == "/users") //Register new user
                 {
-                    // return HandleUserRegister(jsonBody);
+                    return HandleUserRegister(jsonBody);
+                }
+                else if (request == "/sessions")
+                {
+                    return LoginUser(jsonBody);
                 }
             }
+
+            Console.WriteLine(request);
+            Console.WriteLine(httpMethod);
 
             //return "Unknown request.";
             return new HttpResponse(404, "Unknown request");
@@ -110,13 +113,45 @@ namespace MCTG.PresentationLayer
             return new HttpResponse(200, content, defaultHeader);
         }
 
-        private string HandleUserRegister(string jsonBody)
+        private HttpResponse LoginUser(string jsonBody)
         {
+            JObject jsonObject = JObject.Parse(jsonBody);
+            string? username = jsonObject["username"]?.ToString();
+            string? password = jsonObject["password"]?.ToString();
+            if (username == null || password == null)
+            {
+                //error
+            }
 
-          /*  'User u = new User("")
-           _userRepository.AddUser();
-            return "hi"; '*/
-          return "hi";
+            //bool login = _userRepository.GetUsers().Any(u =>
+            //    u.Authentication.Username == username &&
+            //    u.Authentication.Password == Authentication.StringToSHA512(password);
+            var login = _userRepository
+                .GetUsers()
+                .FirstOrDefault(u => u.Authentication.Username == username &&
+                                                                       u.Authentication.Password == Authentication.sha512(password));
+            if (login is not null)
+            {
+                login.Authentication.GenerateToken();
+                Dictionary<string, string> headers = new Dictionary<string, string>()
+                {
+                    {
+                        "Authorization",
+                        new StringBuilder().Append("Bearer: ").Append(value: login.Authentication.getToken()).ToString()
+                    }
+                };
+                return new HttpResponse(200, "Successfully logged in",headers);
+            }
+            else
+            {
+                return new HttpResponse(400, "Invalid credentials");
+            }
+        }
+
+        private HttpResponse HandleUserRegister(string jsonBody)
+        {
+            User u = JsonConvert.DeserializeObject<User>(jsonBody);
+            return _userRepository.AddUser(u);
         }
 
 

@@ -13,6 +13,8 @@ namespace MCTG.BusinessLayer
 
         public string UserName { get; set; }
 
+        public string Password { get; set; }
+
         public int Wins { get; set; }
 
         public int Looses { get;  set; }

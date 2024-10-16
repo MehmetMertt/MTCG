@@ -1,6 +1,6 @@
-﻿using MCTG.Classes.CardStructure;
+﻿using MTCG.Classes.CardStructure;
 
-namespace MCTG.Interfaces;
+namespace MTCG.Interfaces;
 
 internal interface IChangeableContainer
 {

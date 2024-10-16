@@ -1,4 +1,4 @@
-﻿using MCTG.Classes;
+﻿using MTCG.Classes;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace MCTG.DAL
+namespace MTCG.DAL
 {
     public class UserRepository
     {

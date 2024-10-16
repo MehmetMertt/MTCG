@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-using MCTG.Classes.CardStructure;
-using MCTG.Interfaces;
+using MTCG.Classes.CardStructure;
+using MTCG.Interfaces;
 
-namespace MCTG.Classes
+namespace MTCG.Classes
 {
     public class Deck : ICardContainer, IChangeableContainer
     {

@@ -1,11 +1,11 @@
 ﻿using System.Net.Sockets;
 using System.Net;
 using System.Text;
-using MCTG.DAL;
+using MTCG.DAL;
 using System.Reflection.PortableExecutable;
-using MCTG.Classes;
+using MTCG.Classes;
 
-namespace MCTG.PresentationLayer;
+namespace MTCG.PresentationLayer;
 
 public class Server
 {

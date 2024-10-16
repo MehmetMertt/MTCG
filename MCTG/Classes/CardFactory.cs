@@ -1,11 +1,11 @@
-﻿using MCTG.Classes.CardStructure;
+﻿using MTCG.Classes.CardStructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MCTG.Classes
+namespace MTCG.Classes
 {
     internal class CardFactory
     {

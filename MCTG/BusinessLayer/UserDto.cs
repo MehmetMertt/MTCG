@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MCTG.BusinessLayer
+namespace MTCG.BusinessLayer
 {
     public class UserDto
     {
@@ -12,9 +12,6 @@ namespace MCTG.BusinessLayer
         public int MoneySpent { get;  set; }
 
         public string UserName { get; set; }
-
-        public string Password { get; set; }
-
         public int Wins { get; set; }
 
         public int Looses { get;  set; }

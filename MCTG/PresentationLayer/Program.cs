@@ -1,5 +1,5 @@
-﻿using MCTG.Classes;
-using MCTG.PresentationLayer;
+﻿using MTCG.Classes;
+using MTCG.PresentationLayer;
 using System.Security.Cryptography;
 using System.Text;
 using System.Xml;

@@ -1,12 +1,12 @@
 ﻿using System.Text;
-using MCTG.BusinessLayer;
-using MCTG.Classes;
-using MCTG.DAL;
+using MTCG.BusinessLayer;
+using MTCG.Classes;
+using MTCG.DAL;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Web;
 
-namespace MCTG.PresentationLayer
+namespace MTCG.PresentationLayer
 {
     public class RequestHandler(UserRepository userRepository)
     {

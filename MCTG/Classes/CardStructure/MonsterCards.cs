@@ -1,4 +1,4 @@
-﻿namespace MCTG.Classes.CardStructure
+﻿namespace MTCG.Classes.CardStructure
 {
     enum MonsterTypes
     {

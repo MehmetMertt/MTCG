@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MCTG.Classes
+namespace MTCG.Classes
 {
     public class HttpResponse
     {

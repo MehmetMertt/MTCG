@@ -1,4 +1,4 @@
-﻿namespace MTCG.Classes.CardStructure
+﻿namespace MCTG.Classes.CardStructure
 {
     internal class SpellCards : Card
     {

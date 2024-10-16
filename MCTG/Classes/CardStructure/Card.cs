@@ -1,4 +1,4 @@
-﻿namespace MTCG.Classes.CardStructure
+﻿namespace MCTG.Classes.CardStructure
 {
     public enum ElementTypes
     {

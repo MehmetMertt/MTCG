@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MTCG.Interfaces;
-using MTCG.Classes.CardStructure;
+using MCTG.Interfaces;
+using MCTG.Classes.CardStructure;
 
 
-namespace MTCG.Classes
+namespace MCTG.Classes
 {
     public class Stack : ICardContainer, IChangeableContainer
     {

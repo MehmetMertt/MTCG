@@ -15,8 +15,9 @@ public class Server
 
     public Server()
     {
-        var userRepository = new UserRepository();
-        _requestHandler = new RequestHandler(userRepository);
+        const string DBCONNECTIONSTRING = "Host=localhost;Username=admin;Password=admin;Database=postgres";
+        UserRepository.InitDb(DBCONNECTIONSTRING);
+        _requestHandler = new RequestHandler();
     }
 
     public void Start()
@@ -45,7 +46,7 @@ public class Server
             string requestUrl = requestLines[0].Split(' ')[1]; // Erhalte die URL der Anfrage
 
             // Parse Body for POST requests
-            string jsonBody = httpMethod == "POST" ? request.Split("\r\n\r\n")[1] : null;
+            string jsonBody = request.Split("\r\n\r\n")[1];
 
             HttpResponse response = _requestHandler.HandleRequest(requestUrl, httpMethod, jsonBody);
 
@@ -66,7 +67,6 @@ public class Server
 
         string responseHeader = $"HTTP/1.1 {statusCode} {statusMessage}\r\n";
 
-        // Füge alle angegebenen Header hinzu
         if (httpResponse.GetHeaders() != null)
         {
             foreach (var header in httpResponse.GetHeaders())
@@ -76,20 +76,16 @@ public class Server
         }
 
 
-        // Füge eine leere Zeile nach den Headern hinzu (Trennung von Header und Body)
         responseHeader += "\r\n";
 
-        // Konvertiere Header und Body in Bytes
         byte[] responseBuffer = Encoding.UTF8.GetBytes(responseHeader + httpResponse.GetContent());
 
-        // Sende die Antwort zurück über den Stream
         stream.Write(responseBuffer, 0, responseBuffer.Length);
     }
 
 
     private string GetStatusMessage(int statusCode)
     {
-        // Liefert die entsprechende Nachricht für den HTTP-Statuscode
         return statusCode switch
         {
             200 => "OK",

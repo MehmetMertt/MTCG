@@ -5,12 +5,17 @@ using MTCG.DAL;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Web;
+using MTCG.Interfaces;
+using System.Reflection.PortableExecutable;
 
 namespace MTCG.PresentationLayer
 {
-    public class RequestHandler(UserRepository userRepository)
+    public class RequestHandler
     {
         private readonly UserRepository _userRepository = UserRepository.Instance;
+        
+
+
 
         public Dictionary<string, string> defaultHeader = new Dictionary<string, string>
         {
@@ -20,6 +25,7 @@ namespace MTCG.PresentationLayer
 
         public HttpResponse HandleRequest(string request, string httpMethod, string? jsonBody)
         {
+            Console.Write(jsonBody);
 
             if (httpMethod == "GET")
             {
@@ -39,6 +45,12 @@ namespace MTCG.PresentationLayer
                 else if (request == "/sessions")
                 {
                     return LoginUser(jsonBody);
+                }
+            } else if (httpMethod == "PUT")
+            {
+                if (request == "/users")
+                {
+                    return HandleUpdate(jsonBody);
                 }
             }
 
@@ -95,7 +107,7 @@ namespace MTCG.PresentationLayer
         // Methode zur Ausgabe aller Tiere
         private HttpResponse GetUsers()
         {
-            var users = _userRepository.GetUsers();
+            var users = _userRepository.GetAll();
 
             var userDtos = users.Select(user => new UserDto
             {
@@ -113,45 +125,110 @@ namespace MTCG.PresentationLayer
             return new HttpResponse(200, content, defaultHeader);
         }
 
+        private HttpResponse HandleUpdate(string jsonBody)
+        {
+            try
+            {
+                Console.WriteLine(jsonBody);
+                if (string.IsNullOrEmpty(jsonBody))
+                {
+                    return new HttpResponse(400, "Invalid request: Body cannot be null or empty.");
+                }
+                JObject jsonObject = JObject.Parse(jsonBody);
+                    string? username = jsonObject["username"]?.ToString();
+                    if (username == null)
+                    {
+                        throw new ArgumentException("Please fill every field");
+                    }
+
+                    var update = _userRepository.Update(username);
+                    if (update)
+                    {
+                        return new HttpResponse(200, "Successfully changed username");
+
+                    }
+                    return new HttpResponse(404, "Cannot changed username");
+
+            }
+            catch (ArgumentNullException e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+
         private HttpResponse LoginUser(string jsonBody)
         {
-            JObject jsonObject = JObject.Parse(jsonBody);
-            string? username = jsonObject["username"]?.ToString();
-            string? password = jsonObject["password"]?.ToString();
-            if (username == null || password == null)
+            try
             {
-                //error
+                JObject jsonObject = JObject.Parse(jsonBody);
+                string? username = jsonObject["username"]?.ToString();
+                string? password = jsonObject["password"]?.ToString();
+                if (username == null || password == null)
+                {
+                    throw new ArgumentException("Please fill every field");
+                }
+
+                //Console.WriteLine("Password from Userinput: " + Authentication.sha512(password));
+                
+                var login = _userRepository
+                    .GetAll()
+                    .FirstOrDefault(u => u.Authentication.Username == username &&
+                                         u.Authentication.Password == Authentication.sha512(password));
+                if (login is not null)
+                {
+                    login.Authentication.GenerateToken();
+                    Dictionary<string, string> headers = new Dictionary<string, string>()
+                    {
+                        {
+                            "Authorization",
+                            new StringBuilder().Append("Bearer: ").Append(value: login.Authentication.getToken()).ToString()
+                        }
+                    };
+                    return new HttpResponse(200, "Successfully logged in", headers);
+                }
+                else
+                {
+                    return new HttpResponse(400, "Invalid credentials");
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
             }
 
             //bool login = _userRepository.GetUsers().Any(u =>
             //    u.Authentication.Username == username &&
             //    u.Authentication.Password == Authentication.StringToSHA512(password);
-            var login = _userRepository
-                .GetUsers()
-                .FirstOrDefault(u => u.Authentication.Username == username &&
-                                                                       u.Authentication.Password == Authentication.sha512(password));
-            if (login is not null)
-            {
-                login.Authentication.GenerateToken();
-                Dictionary<string, string> headers = new Dictionary<string, string>()
-                {
-                    {
-                        "Authorization",
-                        new StringBuilder().Append("Bearer: ").Append(value: login.Authentication.getToken()).ToString()
-                    }
-                };
-                return new HttpResponse(200, "Successfully logged in",headers);
-            }
-            else
-            {
-                return new HttpResponse(400, "Invalid credentials");
-            }
+            
         }
 
         private HttpResponse HandleUserRegister(string jsonBody)
         {
-            User u = JsonConvert.DeserializeObject<User>(jsonBody);
-            return _userRepository.AddUser(u);
+            try
+            {
+
+                if (string.IsNullOrEmpty(jsonBody))
+                {
+                    return new HttpResponse(400, "Invalid request: Body cannot be null or empty.");
+                }
+                User u = JsonConvert.DeserializeObject<User>(jsonBody);
+                bool success = _userRepository.Add(u);
+                if (success)
+                {
+                    return new HttpResponse(201, "Successfully registered");
+                }
+                else
+                {
+                    return new HttpResponse(404, "User already exists");
+                }
+            }
+            catch (JsonException e)
+            {
+                return new HttpResponse(400, "Invalid  format");
+            }
+
         }
 
 

@@ -11,7 +11,7 @@ namespace MTCG.Classes
     public class Authentication
     {
         public string Username { get; set; }
-        public string Password { get; private set; }
+        public string Password { get; set; }
 
         public string Token { get; private set; }
 
@@ -37,10 +37,13 @@ namespace MTCG.Classes
         ///https://gist.github.com/obrassard/766951b3c65984273ce4b6475e568cf5
         public static string sha512(string inputString)
         {
+            Console.WriteLine("Input string: " + inputString);
             SHA512 sha512 = SHA512.Create();
             byte[] bytes = Encoding.UTF8.GetBytes(inputString);
             byte[] hash = sha512.ComputeHash(bytes);
-            return GetStringFromHash(hash);
+            string outputHash = GetStringFromHash(hash);
+            Console.WriteLine("output string: " + outputHash);
+            return outputHash;
         }
 
         private static string GetStringFromHash(byte[] hash)

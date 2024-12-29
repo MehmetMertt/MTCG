@@ -3,6 +3,7 @@ using MTCG.PresentationLayer;
 using System.Security.Cryptography;
 using System.Text;
 using System.Xml;
+using MTCG.DAL;
 
 
 /*internal class Program
@@ -19,6 +20,7 @@ using System.Xml;
         Console.WriteLine(userA.Authentication.getToken());
     }
 }*/
+
 
 
 var server = new Server();

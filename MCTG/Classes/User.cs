@@ -39,12 +39,13 @@
         {
         }
 
-        public void BuyPackage()
+        public bool BuyPackage()
         {
+            Console.WriteLine("I have: " + this.Coins);
             if (this.Coins < 5)
             {
                 Console.WriteLine("You need atleast 5 Coins for buying a package");
-                return;
+                return false;
             }
             Package p = new Package();
             foreach (var card in p.Container)
@@ -53,7 +54,9 @@
             }
 
             this.Coins = this.Coins - 5;
+            Console.WriteLine("I have: " + this.Coins);
             Console.WriteLine("You successfully bought a package");
+            return true;
         }
 
 

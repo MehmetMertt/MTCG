@@ -13,7 +13,8 @@ using MTCG.DAL;
     {
         User userA = new User("Mehmet", "StarkesPassword123");
         User userB = new User("Max", "StaerkeresPassword123");
-        userA.BuyPackage();
+        userA.Buy
+();
 
 
         userA.Authentication.GenerateToken();

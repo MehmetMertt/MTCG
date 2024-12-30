@@ -45,6 +45,9 @@ namespace MTCG.PresentationLayer
                 else if (request == "/sessions")
                 {
                     return LoginUser(jsonBody);
+                } else if (request == "/packages")
+                {
+                    return BuyPackages(jsonBody);
                 }
             } else if (httpMethod == "PUT")
             {
@@ -61,40 +64,35 @@ namespace MTCG.PresentationLayer
             return new HttpResponse(404, "Unknown request");
         }
 
-        private string HandleAnimalPost(string? jsonBody, string speciesType)
+        private HttpResponse BuyPackages(string jsonBody)
         {
-            /*
-            if (string.IsNullOrWhiteSpace(jsonBody))
+            JObject jsonObject = JObject.Parse(jsonBody);
+            string? token = jsonObject["token"]?.ToString();
+            if (token is null)
             {
-                return "Error: No JSON body provided.";
+                throw new ArgumentException("Token is empty");
             }
 
-            var newAnimalDto = JsonSerializer.Deserialize<AnimalDto>(jsonBody);
-
-            if (string.IsNullOrWhiteSpace(newAnimalDto.Name))
+            User u = _userRepository.getUserFromToken(token);
+            if (u is null)
             {
-                return "Error: 'Name' field is required.";
+                throw new ArgumentException("User doesnt exist");
             }
 
-            ElementType elementType = ParseElementType(newAnimalDto.Element);
-            IMovementBehavior movementBehavior = ParseMovementBehavior(newAnimalDto.Movement);
-            DateTime birth = string.IsNullOrWhiteSpace(newAnimalDto.BirthDate)
-                ? DateTime.Now
-                : DateTime.Parse(newAnimalDto.BirthDate);
-
-            if (speciesType == "cat")
+            bool boughtSuccessfully = u.BuyPackage();
+            if (boughtSuccessfully)
             {
-                _animalRepository.AddAnimal(new Cat(newAnimalDto.Name, birth, movementBehavior, elementType));
-                return $"Cat '{newAnimalDto.Name}' added successfully.";
+                _userRepository.UpdateUserCoins(token,u.Coins - 5);
+                return new HttpResponse(201, "Successfully bought package");
             }
             else
             {
-                _animalRepository.AddAnimal(new Dog(newAnimalDto.Name, birth, movementBehavior, elementType));
-                return $"Dog '{newAnimalDto.Name}' added successfully.";
+                return new HttpResponse(400, "not enough money");
+
             }
-            */
-            throw new NotImplementedException();
+
         }
+
 
         // Hilfsfunktion zur Extraktion von Query-Parametern aus der URL
         private string? ExtractQueryParam(string request, string param)
@@ -157,6 +155,8 @@ namespace MTCG.PresentationLayer
             }
         }
 
+
+
         private HttpResponse LoginUser(string jsonBody)
         {
             try
@@ -185,12 +185,13 @@ namespace MTCG.PresentationLayer
                             new StringBuilder().Append("Bearer: ").Append(value: login.Authentication.getToken()).ToString()
                         }
                     };
-                    return new HttpResponse(200, "Successfully logged in", headers);
+                    if (_userRepository.UpdateUserToken(login.Authentication.Username, login.Authentication.getToken()))
+                    { return new HttpResponse(200, "Successfully logged in", headers);
+                    }
                 }
-                else
-                {
-                    return new HttpResponse(400, "Invalid credentials");
-                }
+               
+                return new HttpResponse(400, "Invalid credentials");
+                
             }
             catch (Exception e)
             {

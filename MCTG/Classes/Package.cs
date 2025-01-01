@@ -11,7 +11,7 @@ namespace MTCG.Classes
 {
     internal class Package : ICardContainer
     {
-        public List<Card> Container { get; set; }
+        public override List<Card> Container { get; set; }
         private readonly int maxCardsInPackage = 5;
         public Package()
         {

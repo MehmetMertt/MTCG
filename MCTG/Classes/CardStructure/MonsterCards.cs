@@ -1,6 +1,6 @@
 ﻿namespace MTCG.Classes.CardStructure
 {
-    enum MonsterTypes
+    public enum MonsterTypes
     {
         Dragon,
         Goblin,

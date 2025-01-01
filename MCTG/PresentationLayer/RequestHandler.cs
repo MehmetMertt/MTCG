@@ -7,13 +7,15 @@ using Newtonsoft.Json.Linq;
 using System.Web;
 using MTCG.Interfaces;
 using System.Reflection.PortableExecutable;
+using MTCG.Classes.CardStructure;
 
 namespace MTCG.PresentationLayer
 {
     public class RequestHandler
     {
         private readonly UserRepository _userRepository = UserRepository.Instance;
-        
+        private readonly CardRepository _cardRepository = CardRepository.Instance;
+
 
 
 
@@ -32,6 +34,12 @@ namespace MTCG.PresentationLayer
                 if (request == "/users") //get All Users
                 {
                     return GetUsers();
+                } else if (request == "/cards")
+                {
+                    return getCards(jsonBody);
+                } else if (request == "/deck")
+                {
+                    return getDeck(jsonBody);
                 }
                 //toGetHandler
             }
@@ -64,6 +72,83 @@ namespace MTCG.PresentationLayer
             return new HttpResponse(404, "Unknown request");
         }
 
+        private HttpResponse getDeck(string jsonBody)
+        {
+            JObject jsonObject = JObject.Parse(jsonBody);
+            string? token = jsonObject["token"]?.ToString();
+            if (token is null)
+            {
+                return new HttpResponse(401, "Token is empty");
+            }
+
+            int? id = _userRepository.getUserIDFromToken(token);
+            if (id == null)
+            {
+                return new HttpResponse(401, "Token not valid");
+
+            }
+
+            var userCards = _cardRepository.getDeckFromUser(id.Value);
+            var cardDtos = userCards.Select(card =>
+            {
+                var cardDto = new CardDto
+                {
+                    Name = card.Name,
+                    Damage = card.Damage,
+                    ElementTyp = card.ElementTyp,
+                };
+
+                if (card is MonsterCards monsterCard)
+                {
+                    cardDto.MonsterType = monsterCard.MonsterType;
+                }
+
+                return cardDto;
+            }).ToList();
+
+        }
+
+
+        private HttpResponse getCards(string jsonBody)
+        {
+            JObject jsonObject = JObject.Parse(jsonBody);
+            string? token = jsonObject["token"]?.ToString();
+            if (token is null)
+            {
+                return new HttpResponse(401, "Token is empty");
+            }
+
+            int? id = _userRepository.getUserIDFromToken(token);
+            if (id == null) 
+            {
+                return new HttpResponse(401, "Token not valid");
+
+            }
+
+            var userCards = _cardRepository.GetAllCardsFromUserID(id.Value); 
+            var cardDtos = userCards.Select(card =>
+            {
+                var cardDto = new CardDto
+                {
+                    Name = card.Name,
+                    Damage = card.Damage,
+                    ElementTyp = card.ElementTyp, 
+                };
+
+                if (card is MonsterCards monsterCard)
+                {
+                    cardDto.MonsterType = monsterCard.MonsterType;
+                }
+
+                return cardDto;
+            }).ToList();
+
+            var content = JsonConvert.SerializeObject(cardDtos);
+            defaultHeader["Content-Length"] = content.Length.ToString();
+            return new HttpResponse(200, content, defaultHeader);
+        }
+
+
         private HttpResponse BuyPackages(string jsonBody)
         {
             JObject jsonObject = JObject.Parse(jsonBody);
@@ -79,10 +164,16 @@ namespace MTCG.PresentationLayer
                 throw new ArgumentException("User doesnt exist");
             }
 
-            bool boughtSuccessfully = u.BuyPackage();
-            if (boughtSuccessfully)
+
+
+            List<Card> boughtSuccessfully = u.BuyPackage();
+            if (boughtSuccessfully is not null)
             {
                 _userRepository.UpdateUserCoins(token,u.Coins - 5);
+                foreach (var c in boughtSuccessfully)
+                {
+                    _cardRepository.Add(c, token);
+                }
                 return new HttpResponse(201, "Successfully bought package");
             }
             else

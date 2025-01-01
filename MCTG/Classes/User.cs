@@ -1,4 +1,6 @@
-﻿namespace MTCG.Classes
+﻿using MTCG.Classes.CardStructure;
+
+namespace MTCG.Classes
 {
     public class User
     {
@@ -39,24 +41,28 @@
         {
         }
 
-        public bool BuyPackage()
+        public List<Card> BuyPackage()
         {
-            Console.WriteLine("I have: " + this.Coins);
+            List<Card> boughtCards = new List<Card>();
+
+
+        Console.WriteLine("I have: " + this.Coins);
             if (this.Coins < 5)
             {
                 Console.WriteLine("You need atleast 5 Coins for buying a package");
-                return false;
+                return null;
             }
             Package p = new Package();
             foreach (var card in p.Container)
             {
                 this.Stack.AddCard(card);
+                boughtCards.Add(card);
             }
 
             this.Coins = this.Coins - 5;
             Console.WriteLine("I have: " + this.Coins);
             Console.WriteLine("You successfully bought a package");
-            return true;
+            return boughtCards;
         }
 
 

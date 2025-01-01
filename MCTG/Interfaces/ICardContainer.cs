@@ -2,11 +2,8 @@
 
 namespace MTCG.Interfaces;
 
-internal interface ICardContainer
+public interface ICardContainer
 {
-    public List<Card> Container { get; set; }
-
-
-
+    public List<Card> getCards();
 
 }

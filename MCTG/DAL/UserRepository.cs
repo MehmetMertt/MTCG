@@ -15,8 +15,8 @@ namespace MTCG.DAL
 
         private static List<User> _users = new List<User>
         {
-            new User("Mehmet", "StarkesPassword123"),
-            new User("Max", "StaerkeresPassword123")
+/*            new User("Mehmet", "StarkesPassword123"),
+            new User("Max", "StaerkeresPassword123")*/
         };
 
         public static UserRepository Instance
@@ -77,6 +77,7 @@ namespace MTCG.DAL
                             id SERIAL PRIMARY KEY, 
                             username VARCHAR(500) NOT NULL,
                             password VARCHAR(500) NOT NULL,
+                            token VARCHAR(500),
                             coins INT DEFAULT 20,
                             moneyspent INT DEFAULT 0,
                             wins INT DEFAULT 0,
@@ -93,6 +94,101 @@ namespace MTCG.DAL
             _instance = repo;
         }
 
+        public void UpdateUserCoins(string token, int newCoins)
+        {
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                var command = connection.CreateCommand();
+                command.CommandText =
+                    @"UPDATE users SET coins = @coins WHERE token = @token;";
+                command.Parameters.AddWithValue("coins", newCoins);
+                command.Parameters.AddWithValue("token", token);
+
+                command.ExecuteNonQuery();
+            }
+        }
+
+        public bool UpdateUserToken(string username, string newToken)
+        {
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                using (var command = connection.CreateCommand())
+                {
+                    connection.Open();
+
+                    command.CommandText =
+                        @"UPDATE users
+                  SET token = @newToken
+                  WHERE username = @username;";
+
+                    command.Parameters.Add(new NpgsqlParameter("@newToken", DbType.String) { Value = newToken });
+                    command.Parameters.Add(new NpgsqlParameter("@username", DbType.String) { Value = username });
+
+                    int rowsAffected = command.ExecuteNonQuery();
+
+                    return rowsAffected > 0;
+                }
+            }
+        }
+
+        public int? getUserIDFromToken(string token)
+        {
+            using (NpgsqlConnection connection = new NpgsqlConnection(_connectionString))
+            {
+                using (NpgsqlCommand command = connection.CreateCommand())
+                {
+                    connection.Open();
+                    command.CommandText =
+                        @"SELECT id FROM users where token = @token LIMIT 1;";
+                    command.Parameters.Add(new NpgsqlParameter("@token", DbType.String) { Value = token });
+
+                    using (NpgsqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return reader.GetInt32(0);
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+
+        public User getUserFromToken(string token)
+        {
+            using (NpgsqlConnection connection = new NpgsqlConnection(_connectionString))
+            {
+                using (NpgsqlCommand command = connection.CreateCommand())
+                {
+                    connection.Open();
+                    command.CommandText =
+                        @"SELECT username, moneyspent, coins, wins, looses, draws, elo FROM users where token = @token LIMIT 1;";
+                    command.Parameters.Add(new NpgsqlParameter("@token", DbType.String) { Value = token });
+
+                    using (NpgsqlDataReader reader = command.ExecuteReader())
+                    {
+                        if(reader.Read())
+                        {
+                            User u = new(reader.GetString(0), "");
+                            u.MoneySpent = (reader.GetInt32(1));
+                            u.Coins = (reader.GetInt32(2));
+                            u.Wins = (reader.GetInt32(3));
+                            u.Looses = (reader.GetInt32(4));
+                            u.Draws = (reader.GetInt32(5));
+                            u.ELO = (reader.GetInt32(6));
+                            return u;
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
 
         // Gibt alle User zurück
         public IEnumerable<User> GetAll()
@@ -105,6 +201,7 @@ namespace MTCG.DAL
                     connection.Open();
                     command.CommandText =
                         @"SELECT username, moneyspent, coins, wins, looses, draws, elo, password FROM users;";
+
                     using (NpgsqlDataReader reader = command.ExecuteReader())
                     {
                         while (reader.Read())
@@ -129,10 +226,6 @@ namespace MTCG.DAL
         }
 
 
-        public User Get(int id)
-        {
-            throw new NotImplementedException();
-        }
 
         public bool Update(string username)
         {
@@ -204,6 +297,11 @@ namespace MTCG.DAL
         public bool Delete(User u)
         {
             //TODO: Fragne ob gefordert?
+            throw new NotImplementedException();
+        }
+
+        public User Get(int id)
+        {
             throw new NotImplementedException();
         }
     }

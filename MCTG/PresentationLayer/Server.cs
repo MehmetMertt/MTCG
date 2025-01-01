@@ -17,6 +17,7 @@ public class Server
     {
         const string DBCONNECTIONSTRING = "Host=localhost;Username=admin;Password=admin;Database=postgres";
         UserRepository.InitDb(DBCONNECTIONSTRING);
+        CardRepository.InitDb(DBCONNECTIONSTRING);
         _requestHandler = new RequestHandler();
     }
 

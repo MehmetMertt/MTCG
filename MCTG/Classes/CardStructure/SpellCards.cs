@@ -2,19 +2,37 @@
 {
     internal class SpellCards : Card
     {
-        public SpellCards(string name, int damage,ElementTypes elementTypes) : base(name, damage,elementTypes)
+        public SpellCards(string name, int damage,ElementTypes elementTypes, int id, int ownerid) : base(name, damage,elementTypes, id,ownerid)
         {
             
         }
+
+        public SpellCards(string name, int damage, ElementTypes elementTypes) : base(name, damage, elementTypes)
+        {
+
+        }
+
         public override void Attack()
         {
 
         }
 
-        public override void PrintInfo()
+        public override string getInfo()
         {
-            Console.WriteLine($"Damage: {this.Damage} | Name: {this.Name} | ElementType: {this.ElementTyp} ");
+            var infoParts = new List<string>();
+
+            if (!string.IsNullOrEmpty(this.Name))
+                infoParts.Add($"Name: {this.Name}");
+
+            if (this.Damage != null)
+                infoParts.Add($"Damage: {this.Damage}");
+
+            if (this.ElementTyp != null)
+                infoParts.Add($"ElementType: {this.ElementTyp}");
+
+            return string.Join(" | ", infoParts);
         }
+
 
         public int calculateEffectiveness()
         {

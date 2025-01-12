@@ -7,16 +7,23 @@ using System.Threading.Tasks;
 using MTCG.Classes;
 using MTCG.Classes.CardStructure;
 using MTCG.Interfaces;
+using Newtonsoft.Json.Linq;
 using Npgsql;
 
 namespace MTCG.DAL
 {
-    internal class CardRepository //: IRepository<Card>
+    public class CardRepository //: IRepository<Card>
     {
 
         CardRepository(string connectionString)
         {
             this._connectionString = connectionString;
+        }
+
+        private NpgsqlTransaction? _transaction;
+        public void SetTransaction(NpgsqlTransaction transaction)
+        {
+            _transaction = transaction;
         }
 
         private static CardRepository _instance;
@@ -58,27 +65,26 @@ namespace MTCG.DAL
             {
                 connection.Open();
 
-
-
-
                 connection.ChangeDatabase(dbName);
-
 
                 using (IDbCommand cmd = connection.CreateCommand())
                 {
                     cmd.CommandText = @"
-                CREATE TABLE IF NOT EXISTS Cards (
-                    id SERIAL PRIMARY KEY,
-                    name VARCHAR(500) NOT NULL,
-                    deck_id INT NOT NULL,
-                    damage INT NOT NULL,
-                    elementtype VARCHAR(20) NOT NULL,
-                    monstertype VARCHAR(20),
-                    ownerid INT NOT NULL,
-                    FOREIGN KEY (ownerid) REFERENCES Users(id) ON DELETE CASCADE
-                    FOREIGN KEY (deck_id) REFERENCES decks (deck_id) ON DELETE CASCADE
-                )
-            ";
+                                        CREATE TABLE IF NOT EXISTS Cards (
+                                            id SERIAL PRIMARY KEY,
+                                            name VARCHAR(500) NOT NULL,
+                                            deck_id INT,
+                                            damage INT NOT NULL,
+                                            elementtype VARCHAR(20) NOT NULL,
+                                            monstertype VARCHAR(20),
+                                            ownerid INT NOT NULL,
+                                            locked boolean DEFAULT FALSE,
+                                            FOREIGN KEY (ownerid) REFERENCES users(id) ON DELETE CASCADE,
+                                            FOREIGN KEY (deck_id) REFERENCES decks(id) ON DELETE CASCADE
+                                        );
+                                        ";
+
+
 
                     cmd.ExecuteNonQuery();
                 }
@@ -86,6 +92,62 @@ namespace MTCG.DAL
 
             _instance = repo;
         }
+
+
+        public Card getCard(int cardID, int ownerID)
+        {
+            using (NpgsqlConnection connection = new NpgsqlConnection(_connectionString))
+            {
+                using (NpgsqlCommand command = connection.CreateCommand())
+                {
+                    connection.Open();
+                    command.CommandText =
+                        @"SELECT name, elementtype, monstertype, damage FROM Cards WHERE ownerid = @ownerID and id = @cardID;";
+                    command.Parameters.Add(new NpgsqlParameter("@ownerID", ownerID));
+                    command.Parameters.Add(new NpgsqlParameter("@cardID", cardID));
+
+                    using (NpgsqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            Card c;
+                            string name = reader.GetString(0);
+                            bool elementTypeSuccess = Enum.TryParse(reader.GetString(1), out ElementTypes elementTyp);
+                            if (!elementTypeSuccess)
+                            {
+                                throw new Exception("Error while creating card");
+
+                            }
+
+                            int damage = reader.GetInt32(3);
+
+                            if (!reader.IsDBNull(2))
+                            {
+                                bool monsterTypeSuccess = Enum.TryParse(reader.GetString(2), out MonsterTypes monsterType);
+                                if (!monsterTypeSuccess)
+                                {
+                                    throw new Exception("Error while creating card");
+                                }
+                                c = new MonsterCards(name, damage, elementTyp, monsterType, cardID,ownerID);
+                            }
+                            else
+                            {
+                                c = new SpellCards(name, damage, elementTyp, cardID,ownerID);
+                            }
+
+                            if (c == null)
+                            {
+                                throw new Exception("Error while getting card");
+                            }
+                            return c;
+                        }
+                    }
+                }
+            }
+
+            throw new Exception("Card not found");
+        }
+        
 
 
 
@@ -99,7 +161,7 @@ namespace MTCG.DAL
                 {
                     connection.Open();
                     command.CommandText =
-                        @"SELECT id, name, elementtype, monstertype, ownerid, damage FROM Cards WHERE ownerid = @id;";
+                        @"SELECT id, name, elementtype, monstertype, damage FROM Cards WHERE ownerid = @id;";
                     command.Parameters.Add(new NpgsqlParameter("@id", id));
 
                     using (NpgsqlDataReader reader = command.ExecuteReader())
@@ -114,8 +176,8 @@ namespace MTCG.DAL
                                 return null;
                             }
 
-                            int ownerID = reader.GetInt32(4);
-                            int damage = reader.GetInt32(5);
+                            int cardID = reader.GetInt32(0);
+                            int damage = reader.GetInt32(4);
 
                             if (!reader.IsDBNull(3))
                             {
@@ -124,11 +186,11 @@ namespace MTCG.DAL
                                 {
                                     return null;
                                 }
-                                c = new MonsterCards(name, damage, elementTyp, monsterType);
+                                c = new MonsterCards(name, damage, elementTyp, monsterType,cardID,id);
                             }
                             else
                             {
-                                c = new SpellCards(name, damage, elementTyp);
+                                c = new SpellCards(name, damage, elementTyp,cardID,id);
                             }
                             result.Add(c);
                         }
@@ -183,9 +245,43 @@ namespace MTCG.DAL
             return false;
         }
 
-        public bool Update(Card t, string[] parameters)
+        public bool LockCard(int cardID, bool cardLock)
         {
-            throw new NotImplementedException();
+            using (NpgsqlConnection connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var cmd = new NpgsqlCommand("UPDATE Cards SET locked=@cardLock WHERE id = @cardid", connection))
+                {
+                    cmd.Parameters.Add(new NpgsqlParameter("@cardid", cardID));
+                    cmd.Parameters.Add(new NpgsqlParameter("@cardLock", cardLock));
+                    cmd.Transaction = _transaction;
+                    cmd.ExecuteNonQuery();
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public bool TransferCard(int cardId, int newOwnerId)
+        {
+            using (NpgsqlConnection connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+                //                using (var cmd = new NpgsqlCommand("UPDATE Cards (name, damage, elementtype, monstertype, ownerid) VALUES (@name, @damage, @elementtype, @monstertype, @ownerid)", connection))
+
+                using (var cmd = new NpgsqlCommand("UPDATE Cards SET ownerid=@ownerid WHERE id = @cardid", connection))
+                {
+                    cmd.Parameters.Add(new NpgsqlParameter("@ownerid", newOwnerId));
+                    cmd.Parameters.Add(new NpgsqlParameter("@cardid", cardId));
+                    cmd.Transaction = _transaction;
+                    cmd.ExecuteNonQuery();
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public bool Delete(Card t)

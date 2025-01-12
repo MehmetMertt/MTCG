@@ -11,6 +11,7 @@ namespace MTCG.BusinessLayer
         public int Coins { get;  set; }
         public int MoneySpent { get;  set; }
 
+        public int id { get; set; }
         public string UserName { get; set; }
         public int Wins { get; set; }
 

@@ -9,13 +9,20 @@ using MTCG.Classes.CardStructure;
 
 namespace MTCG.Classes
 {
-    public class Stack : ICardContainer, IChangeableContainer
+    public class Stack : 
+        ICardContainer, IChangeableContainer
     {
-        public List<Card> Container { get; set; }
+        public List<Card> Container;
+        
 
         public Stack()
         {
             this.Container = new List<Card>();
+        }
+
+        public  List<Card> getCards()
+        {
+            return this.Container;
         }
 
         public void AddCard(Card c)

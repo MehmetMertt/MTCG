@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -9,19 +10,26 @@ using MTCG.Interfaces;
 
 namespace MTCG.Classes
 {
-    public class Deck : ICardContainer, IChangeableContainer
+    public class Deck
     {
-        public List<Card> Container { get; set; }
+        public List<Card> Container;
 
-        public void AddCard(Card c)
+        public Deck()
         {
-            if (Container.Count > 3)
+            this.Container = new List<Card>();
+        }
+
+        public void AddCard(List<Card> cards)
+        {
+            foreach (var card in cards)
             {
-                // TODO: Maybe Custom Exception handling
-                Console.WriteLine("Es sind maximal 4 Karten im Deck erlaubt");
-                return;
+                Container.Add(card);
             }
-            Container.Add(c);
+        }
+
+        public List<Card> getCards()
+        {
+            return this.Container;
         }
 
         public void RemoveCard(Card c)

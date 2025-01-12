@@ -17,45 +17,53 @@ public class Server
     {
         const string DBCONNECTIONSTRING = "Host=localhost;Username=admin;Password=admin;Database=postgres";
         UserRepository.InitDb(DBCONNECTIONSTRING);
+        DeckRepository.InitDb(DBCONNECTIONSTRING);
         CardRepository.InitDb(DBCONNECTIONSTRING);
-        _requestHandler = new RequestHandler();
+        TradingShopRepository.InitDb(DBCONNECTIONSTRING);
+        UnitOfWork.InitUnitOfWork(DBCONNECTIONSTRING);
+        ShopService ss = new ShopService(UnitOfWork.Instance);
+        _requestHandler = new RequestHandler(ss);
     }
 
     public void Start()
     {
-        // Starte den TCP-Listener auf Port 8080, der eingehende Verbindungen akzeptiert
         TcpListener listener = new TcpListener(IPAddress.Any, PORT);
         listener.Start();
         Console.WriteLine($"Server started, listening on port {PORT}...");
 
         while (true)
         {
-            // Akzeptiere eingehende TCP-Verbindungen
-            using TcpClient client = listener.AcceptTcpClient();
-            using NetworkStream? stream = client.GetStream();
+            TcpClient client = listener.AcceptTcpClient();
 
-            // Erstellt einen Puffer (ein Array von Bytes), um die eingehenden Daten zu speichern.
-            // Die Größe des Puffers wird basierend auf der maximalen Empfangsgröße des Clients festgelegt.
-            byte[] buffer = new byte[client.ReceiveBufferSize];
-            int bytesRead = stream.Read(buffer, 0, buffer.Length);
+            // Spawn a new task for each client
+            Task.Run(() => HandleClient(client));
+        }
+    }
 
-            // Parse die HTTP-Anfrage aus dem eingehenden TCP-Datenstrom
-            string request =
-                Encoding.UTF8.GetString(buffer, 0, bytesRead); //Konvertieren der bytes aus buffer in string
-            string[] requestLines = request.Split("\r\n");
-            string httpMethod = requestLines[0].Split(' ')[0]; // Erhalte die HTTP-Methode (GET, POST, DELETE)
-            string requestUrl = requestLines[0].Split(' ')[1]; // Erhalte die URL der Anfrage
+    private void HandleClient(object? clientObj)
+    {
+        TcpClient client = (TcpClient)clientObj!;
+        try
+        {
+            using (client)
+            {
+                using NetworkStream stream = client.GetStream();
+                byte[] buffer = new byte[client.ReceiveBufferSize];
+                int bytesRead = stream.Read(buffer, 0, buffer.Length);
 
-            // Parse Body for POST requests
-            string jsonBody = request.Split("\r\n\r\n")[1];
+                string request = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                string[] requestLines = request.Split("\r\n");
+                string httpMethod = requestLines[0].Split(' ')[0];
+                string requestUrl = requestLines[0].Split(' ')[1];
+                string jsonBody = request.Contains("\r\n\r\n") ? request.Split("\r\n\r\n")[1] : string.Empty;
 
-            HttpResponse response = _requestHandler.HandleRequest(requestUrl, httpMethod, jsonBody);
-
-
-
-
-            SendHttpResponse(stream, response);
-
+                HttpResponse response = _requestHandler.HandleRequest(requestUrl, httpMethod, jsonBody);
+                SendHttpResponse(stream, response);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error handling client: {ex.Message}");
         }
     }
 

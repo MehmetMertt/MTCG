@@ -30,16 +30,15 @@ namespace MTCG.Classes
         {
             int damage = GetRandomDamage();
             ElementTypes element = GetRandomEnum<ElementTypes>();
-
             int r = Random.Shared.Next(0, 2);
             switch (r)
             {
                 case 0:
-                    return new SpellCards("test",damage,element);
+                    return new SpellCards($"{element.ToString()} Spell",damage,element);
                     break;
                 case 1:
                     MonsterTypes monster = GetRandomEnum<MonsterTypes>();
-                    return new MonsterCards("test",damage,element,monster);
+                    return new MonsterCards($"{element.ToString()} {monster.ToString()}",damage,element,monster);
                     break;
                 default:
                     Console.WriteLine("HALT STOP");

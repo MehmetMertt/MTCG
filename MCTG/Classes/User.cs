@@ -12,6 +12,8 @@ namespace MTCG.Classes
         public int Coins { get; set; } = 20; //TODO: Dont forget to change in UserRepository.cs
         public int MoneySpent { get; set; } = 0;
 
+        public int id;
+        
         public int Wins { get; set; } = 0;
 
         public int Looses { get;  set; } = 0;
@@ -39,6 +41,23 @@ namespace MTCG.Classes
 
         public void Battle()
         {
+        }
+
+        public void Win()
+        {
+            this.Wins++;
+            this.ELO += 3;
+        }
+
+        public void Loss()
+        {
+            this.Looses++;
+            this.ELO -= 5;
+        }
+
+        public void Draw()
+        {
+            this.Draws++;
         }
 
         public List<Card> BuyPackage()
